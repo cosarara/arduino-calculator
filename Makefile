@@ -4,6 +4,11 @@ cli: src/eval.c src/float.c cli.c
 	gcc -Wall -g -c src/float.c
 	gcc -Wall -g -Isrc -lm eval.o float.o cli.c -o cli
 
+clang: src/eval.c src/float.c cli.c
+	clang -Wall -g -c src/eval.c
+	clang -Wall -g -c src/float.c
+	clang -Wall -g -Isrc -lm eval.o float.o cli.c -o cli
+
 #CC = avr-gcc
 #CXX = avr-g++
 #

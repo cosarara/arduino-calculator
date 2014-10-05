@@ -10,8 +10,9 @@
 //char eval_str[] = "1+10";
 
 
-#define BUF_SIZE 10
-#define RES_BUF_SIZE 10
+#define PTRS_SIZE 16
+#define STR_SIZE 16
+#define RES_BUF_SIZE 16
 
 void dbg(char*);
 
@@ -48,33 +49,26 @@ void cut_trailing_zeroes(char* s) {
 	}
 }
 
-char* eval_unary(char op, char* x) {
+int eval_unary(char op, char* x, char* out) {
 	double result;
 	double x_i = atof(x);
-	char* res;
 	switch (op) {
 	case 'c' :
 		result = cos(x_i);
 		break;
 	default :
-		result = 12345;
-		break;
-	}
-	res = malloc(RES_BUF_SIZE);
-	if (res == NULL) {
-		return NULL;
+		return 1;
 	}
 	//snprintf(res, 25, "%f", result);
-	fmtDouble(result, 6, res, RES_BUF_SIZE);
-	cut_trailing_zeroes(res);
-	return res;
+	fmtDouble(result, 6, out, RES_BUF_SIZE);
+	cut_trailing_zeroes(out);
+	return 0;
 }
 
-char* eval_pair(char op, char* fst, char* snd) {
+int eval_pair(char op, char* fst, char* snd, char* out) {
 	double result;
 	double fst_i = atof(fst);
 	double snd_i = atof(snd);
-	char* res;
 	switch (op) {
 	case '*' :
 		result = fst_i * snd_i;
@@ -89,17 +83,12 @@ char* eval_pair(char op, char* fst, char* snd) {
 		result = fst_i - snd_i;
 		break;
 	default :
-		result = 12345;
-		break;
-	}
-	res = malloc(RES_BUF_SIZE);
-	if (res == NULL) {
-		return NULL;
+		return 1;
 	}
 	//snprintf(res, 25, "%f", result);
-	fmtDouble(result, 6, res, RES_BUF_SIZE);
-	cut_trailing_zeroes(res);
-	return res;
+	fmtDouble(result, 6, out, RES_BUF_SIZE);
+	cut_trailing_zeroes(out);
+	return 0;
 }
 
 int c_in_elements(char c, char* elements[]) {
@@ -128,74 +117,134 @@ void print_elements(char* elements[]) {
 // This functions are not written in a recursive form to avoid
 // memory problems.
 
+char* pre_eval_pair(char* elements[], int i, char* op, char* left, char* right, char* out) {
+	char etmp1[STR_SIZE];
+	char etmp2[STR_SIZE];
+	char* end = NULL;
+	//printf("clear_bop: %d\n", (int)(sizeof(etmp1)+sizeof(etmp2)+sizeof(end)));
+
+	memset(etmp1, 0, sizeof(etmp1));
+	memset(etmp2, 0, sizeof(etmp2));
+
+	memcpy(etmp1, left, op-left);
+
+	if (elements[i+3] == NULL) {
+		strcpy(etmp2, right);
+		end = strchr(right, '\0');
+	} else {
+		end = elements[i+3];
+		/*
+		printf("right: %s\n", right);
+		printf("end: %s\n", end);
+		printf("right-end: %d\n", right-end);
+		*/
+		memcpy(etmp2, right, end-right);
+	}
+	if (eval_pair(*op, etmp1, etmp2, out)) return NULL;
+
+	return end;
+}
+
+void get_elements(char* elements[], char* eval_str) {
+	int i;
+	char lastc = 0;
+	char c = 0;
+	int elements_i = 0;
+
+	char* start = eval_str;
+	//printf("get_elements: %d\n", (int)(sizeof(i)+sizeof(lastc)+sizeof(c)+sizeof(elements_i)+sizeof(start)));
+
+	memset(elements, 0, PTRS_SIZE*sizeof(char*));
+
+	for (i=0;;i++) {
+		c = eval_str[i];
+		// New thing, push previous
+		if ((!is_digitf(lastc) && lastc != 0) || (is_digitf(lastc) && !is_digitf(c))) {
+			elements[elements_i] = start;
+			elements_i++;
+			start = eval_str + i;
+		}
+		lastc = c;
+		if (c == '\0') break;
+	}
+}
+
 // Clear a binary operator
 int clear_bop(char* elements[], char op) {
-	char* new_elements[BUF_SIZE];
-	int new_elements_i = 0;
+	char tmp[STR_SIZE];
 
-	char* prevelement = NULL;
-	char* thiselement = NULL;
-	char* nextelement = NULL;
-	char* result = NULL;
+	char* left = NULL;
+	char* l_op = NULL; // local op
+	char* right = NULL;
+	char* end = NULL;
 	int i;
+	//printf("clear_bop: %d\n", (int)(sizeof(tmp)+sizeof(left)+sizeof(l_op)+sizeof(right)+sizeof(end)+sizeof(i)));
 
-	memset(new_elements, 0, sizeof(new_elements));
+	memset(tmp, 0, sizeof(tmp));
 
 	// Mentres trobem l'operador a elements[]
 	while (c_in_elements(op, elements)) {
 		//print_elements(elements);
-		new_elements_i = 0;
-		for (i=1;; i++) {
-			prevelement = elements[i-1];
-			thiselement = elements[i];
-			nextelement = elements[i+1];
+		//new_elements_i = 0;
+		for (i=0;; i++) {
+			left = elements[i];
+			l_op = elements[i+1];
+			right = elements[i+2];
 
-			// End of string
-			if (prevelement == 0 ||
-			    thiselement == 0 ||
-			    nextelement == 0) break;
+			if (left == 0 ||
+			    l_op == 0 ||
+			    right == 0) break;
 
-			if (is_digitf(prevelement[0]) && is_digitf(nextelement[0]) &&
-			    thiselement[0] == op) {
-				result = eval_pair(thiselement[0], prevelement, nextelement);
-				if (result == NULL) {
-					return 1;
+			if (is_digitf(left[0]) && is_digitf(right[0]) &&
+			    l_op[0] == op) {
+				memset(tmp, 0, sizeof(tmp));
+				end = pre_eval_pair(elements, i, l_op, left, right, tmp);
+				if (end == NULL) {
+					return 1; // ERROR
 				}
-				//dbg(result);
-				new_elements[new_elements_i++] = result;
-				free(prevelement);
-				free(thiselement);
-				free(nextelement);
-				prevelement = thiselement = nextelement = NULL;
-				// Copy everything after this and break
-				// new_elements[new_elements_i:BUF_SIZE-i-2] = elements[i+2:BUF_SIZE-i-2]
-				i += 2;
-				memcpy(&new_elements[new_elements_i], &elements[i],
-						(BUF_SIZE-i)*sizeof(char*));
+				// Put the rest of elements in tmp, then everything back
+				strcpy(strchr(tmp, 0), end);
+				strcpy(left, tmp);
+				get_elements(elements, elements[0]);
 				break;
-			} else {
-				new_elements[new_elements_i++] = prevelement;
 			}
 		}
-		memcpy(elements, new_elements, BUF_SIZE*sizeof(char*));
-		memset(new_elements, 0, BUF_SIZE*sizeof(char*));
+		//memcpy(elements, new_elements, PTRS_SIZE*sizeof(char*));
+		//memset(new_elements, 0, PTRS_SIZE*sizeof(char*));
 	}
 	return 0;
 }
 
+char* pre_eval_unary(char* elements[], int i, char* op, char* arg, char* out) {
+	char etmp[STR_SIZE];
+	char* end = NULL;
+	//printf("clear_bop: %d\n", (int)(sizeof(etmp1)+sizeof(etmp2)+sizeof(end)));
+
+	memset(etmp, 0, sizeof(etmp));
+
+	if (elements[i+2] == NULL) {
+		strcpy(etmp, arg);
+		end = strchr(arg, '\0');
+	} else {
+		end = elements[i+2];
+		memcpy(etmp, arg, end-arg);
+	}
+	if (eval_unary(*op, etmp, out)) return NULL;
+
+	return end;
+}
+
 // Clear an unary operator
 int clear_uop(char* elements[], char op) {
-	char* new_elements[BUF_SIZE];
-	int new_elements_i = 0;
+	char tmp[STR_SIZE];
 
 	char* thiselement = NULL;
 	char* nextelement = NULL;
-	char* result = NULL;
+	char* end = NULL;
 	int i;
-	memset(new_elements, 0, sizeof(new_elements));
+	memset(tmp, 0, sizeof(tmp));
 
 	while (c_in_elements(op, elements)) {
-		new_elements_i = 0;
 		for (i=0;; i++) {
 			thiselement = elements[i];
 			nextelement = elements[i+1];
@@ -203,45 +252,29 @@ int clear_uop(char* elements[], char op) {
 			// End of string
 			if (thiselement == 0 ||
 			    nextelement == 0) break;
-				puts("ok");
 
 			if (is_digitf(nextelement[0]) && thiselement[0] == op) {
-				result = eval_unary(thiselement[0], nextelement);
-				if (result == NULL) {
+				memset(tmp, 0, sizeof(tmp));
+				end = pre_eval_unary(elements, i, thiselement, nextelement, tmp);
+				if (end == NULL) {
 					return 1;
 				}
 				//dbg(result);
-				new_elements[new_elements_i++] = result;
-				free(thiselement);
-				free(nextelement);
-				i += 2;
-				// new_elements[new_elements_i:BUF_SIZE-i-2] = elements[i+2:BUF_SIZE-i-2]
-				memcpy(&new_elements[new_elements_i], &elements[i], (BUF_SIZE-i)*sizeof(char*));
+				strcpy(strchr(tmp, 0), end);
+				strcpy(thiselement, tmp);
+				get_elements(elements, elements[0]);
 				break;
-			} else {
-				new_elements[new_elements_i++] = thiselement;
 			}
 		}
-		memcpy(elements, new_elements, BUF_SIZE*sizeof(char*));
-		memset(new_elements, 0, BUF_SIZE*sizeof(char*));
 	}
 	return 0;
 }
 
 int eval_subexpr(char* eval_str, char* out) {
 	int failed = 0;
-	int i;
-	char lastc = 0;
-	char c = 0;
 
-	char* elements[BUF_SIZE];
-	int elements_i = 0;
-
-	char element[BUF_SIZE];
-	int element_i = 0;
-	char* prevelement = NULL;
-
-	memset(elements, 0, sizeof(elements));
+	char* elements[PTRS_SIZE];
+	//printf("eval_subexpr: %d\n", (int)(sizeof(failed)+sizeof(elements)));
 
 	if (eval_str[0] == '\0') {
 		out[0] = '\0';
@@ -249,27 +282,8 @@ int eval_subexpr(char* eval_str, char* out) {
 	}
 
 	// Separar els elements de l'expressió
-	for (i=0;;i++) {
-		c = eval_str[i];
-		// New thing, push previous
-		if ((!is_digitf(lastc) && lastc != 0) || (is_digitf(lastc) && !is_digitf(c))) {
-			if (element[0] != 0) {
-				//puts("next");
-				// Guardem aquest element a elements[] i anem pel següent
-				prevelement = strdup(element);
-				element[0] = 0;
-				element_i = 0;
-				// XXX: test if null
-				elements[elements_i] = prevelement;
-				elements_i++;
-			}
-		}
-		element[element_i++] = c;
-		element[element_i] = 0;
+	get_elements(elements, eval_str);
 
-		lastc = c;
-		if (c == '\0') break;
-	}
 	//i = 0;
 	//while (elements[i] != 0) {
 	//	puts(elements[i++]);
@@ -284,11 +298,11 @@ int eval_subexpr(char* eval_str, char* out) {
 		puts("ERROR");
 		failed = 1;
 	} else {
-		puts("END");
-		puts(elements[0]);
+		//puts("END");
+		//puts(elements[0]);
 		strcpy(out, elements[0]);
 	}
-	free_elements(elements);
+	//free_elements(elements);
 	return failed;
 }
 
@@ -296,7 +310,9 @@ int eval_subexpr(char* eval_str, char* out) {
 int clear_parens(char* expr, char* out) {
 	uintptr_t start;
 	uintptr_t len;
-	char sub_expr[BUF_SIZE];
+	char sub_expr[STR_SIZE];
+	char sub_expr_tmp[STR_SIZE];
+	//printf("clear_parens: %d\n", (int)(sizeof(start)+sizeof(len)+sizeof(sub_expr)+sizeof(sub_expr_tmp)));
 #ifdef IN_ARDUINO
 	dbg("hello0");
 #endif
@@ -306,13 +322,16 @@ int clear_parens(char* expr, char* out) {
 		memcpy(sub_expr, &expr[start], len);
 		sub_expr[len] = 0;
 		//puts(sub_expr);
-		if (eval_subexpr(sub_expr, sub_expr)) {
+		if (eval_subexpr(sub_expr, sub_expr_tmp)) {
 			return 1;
 		}
+		//memcpy(sub_expr, sub_expr_tmp, sizeof(sub_expr_tmp));
 		//puts("subexpr:");
 		//puts(sub_expr);
-		strcpy(&expr[start-1], sub_expr);
-		strcpy(&expr[start+strlen(sub_expr)-1], &expr[start+len+1]);
+		// now sub_expr will be used as another tmp var, for the sake of memory usage
+		strcpy(sub_expr, &expr[start+len+1]); // holds the tail
+		strcpy(&expr[start-1], sub_expr_tmp); // put the middle
+		strcpy(&expr[start+strlen(sub_expr_tmp)-1], sub_expr); // put the tail
 		//puts(expr);
 	}
 #ifdef IN_ARDUINO

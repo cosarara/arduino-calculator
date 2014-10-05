@@ -61,25 +61,27 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM);
 #define numCol 4
 #define numFil 5
 
-#define X11 21
-#define X12 68
-#define X21 71
-#define X22 118
-#define X31 121
-#define X32 168
-#define X41 171
-#define X42 218
+#define X11 18
+#define X12 58
+#define X21 61
+#define X22 101
+#define X31 104
+#define X32 144
+#define X41 147
+#define X42 187
+#define X51 190
+#define X52 230
 
-#define Y11 65
-#define Y12 112
-#define Y21 115
-#define Y22 162
-#define Y31 165
-#define Y32 212
-#define Y41 215
-#define Y42 262
-#define Y51 265
-#define Y52 312
+#define Y11 57
+#define Y12 105
+#define Y21 108
+#define Y22 156
+#define Y31 159
+#define Y32 207
+#define Y41 210
+#define Y42 258
+#define Y51 261
+#define Y52 309
 
 int multi = 10;
 int divi = 0;
@@ -91,23 +93,30 @@ int decMostrar = 0;
 char operacion = ' ';
 boolean error = false;
 
-char teclas_bas[5][4] = {
-	{ '<', '>', 'C', 'o' }, // o is the switch key
-	{ '7', '8', '9', '/' },
-	{ '4', '5', '6', '*' },
-	{ '1', '2', '3', '-' },
-	{ '0', '.', '=', '+' },
+ // ^ for power
+ // S for sin-1 s for sin
+ // [ for sqrt, ] for any root, C for cos-1, c for cos
+ // T for tan-1, t for tan, $ and # TODO
+ // ! for factorial, p for pi, l for ln
+ // o is the switch key
+
+char teclas_bas[5][5] = {
+	{ 'o', '(', ')', '@', 'A' },
+	{ '7', '8', '9', '^', '&' },
+	{ '4', '5', '6', '*', '/' },
+	{ '1', '2', '3', '+', '-' },
+	{ '0', '.', 'a', '=', '=' },
 };
 
-char teclas_adv[5][4] = {
-	{ '<', '>', '^', 'o' }, // ^ for power
-	{ '(', ')', 'S', 's' }, // S for sin-1 s for sin
-	{ '[', ']', 'C', 'c' }, // [ for sqrt, ] for any root, C for cos-1, c for cos
-	{ '$', '#', 'T', 't' }, // T for tan-1, t for tan, $ and # TODO
-	{ '@', '!', 'p', 'l' }, // ! for factorial, p for pi, l for ln
+char teclas_adv[5][5] = {
+	{ 'o', '(', ')', '@', 'A' },
+	{ 'z', 'l', 'n', 's', 'S' },
+	{ 'R', 'r', '!', 'c', 'C' },
+	{ 'r', 'e', 'e', 't', 'T' },
+	{ 'p', '.', 'a', '=', '=' },
 };
 
-char (*teclas)[5][4] = &teclas_bas;
+char (*teclas)[5][5] = &teclas_bas;
 
 char eval_str[100];
 int eval_str_i;
@@ -167,6 +176,9 @@ int get_col_in_grid(int x) {
 	}
 	if (x>=X41 && x<=X42) {
 		columna = 4;
+	}
+	if (x>=X51 && x<=X52) {
+		columna = 5;
 	}
 	return columna;
 }
@@ -235,7 +247,7 @@ void loop() {
 		Serial.write("\r\n");
 
 		switch (tecla) {
-		case 'C' :
+		case 'A' :
 			eval_str[0] = 0;
 			eval_str_i = 0;
 			limpiar();
