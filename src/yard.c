@@ -17,14 +17,16 @@ int is_digitf(char c);
 #define BINARY 2
 #define UNARY 1
 int is_op(char c) {
-	return (!is_digitf(c) && c != '(' && c != ')');
-	//if (strchr("*/+-^rE", c)) return BINARY;
-	//if (strchr("cstCSTlnR!", c)) return UNARY;
-	//return 0;
+	//return (!is_digitf(c) && c != '(' && c != ')');
+	if (c == '\0') return 0;
+	if (strchr("*/+-^rE", c)) return BINARY;
+	if (strchr("cstCSTlnR!", c)) return UNARY;
+	return 0;
 }
 
 double eval_unary_d(char op, double x_i) {
 	double result;
+	printf("opping %c %f\n", op, x_i);
 	switch (op) {
 	case '-' :
 		result = -x_i;
@@ -63,6 +65,7 @@ double eval_unary_d(char op, double x_i) {
 		puts("caca unary");
 		exit(1);
 	}
+	printf("\t= %f\n", result);
 	return result;
 }
 
@@ -124,7 +127,10 @@ double r_polish_slim(double* stack, char* types, int stack_i) {
 	// stack_i is stack length from now on
 	//stack_i += 1;
 	while (stack_i > 1) { // TODO: time out
+		puts("----------------------------");
 		printf("stack size: %d\n", stack_i);
+		printf("i: %d\n", i);
+		r_polish_slim_dbg(stack, types, stack_i);
 		if (types[i] == NUM) {
 			printf("\t%f\n", stack[i]);
 			//fmtDouble(stack[i], 6, tmp, 10);
@@ -133,7 +139,7 @@ double r_polish_slim(double* stack, char* types, int stack_i) {
 		} else {
 			op = *(char*)(&stack[i]);
 			printf("\t%c\n", op);
-			if (is_op(op) == UNARY || (op == '-' && stack_i == 2)) {
+			if (is_op(op) == UNARY || (op == '-' && i == 1)) {
 				a = stack[i-1];
 				result = eval_unary_d(op, a);
 				stack[i-1] = result;
@@ -144,9 +150,8 @@ double r_polish_slim(double* stack, char* types, int stack_i) {
 					types[i+j-1] = types[i+j];
 				}
 				stack_i -= 1;
-				i--;
-			}
-			if (is_op(op) == BINARY) {
+				//i--;
+			} else if (is_op(op) == BINARY) {
 				a = stack[i-2];
 				b = stack[i-1];
 				result = eval_pair_d(op, a, b);
@@ -212,6 +217,8 @@ int r_polish(char* in) {
 }
 
 int get_prec(char op) {
+	if (is_op(op) == UNARY) return 5;
+
 	switch (op) {
 	case '*' :
 		return 3;
@@ -228,8 +235,8 @@ int get_prec(char op) {
 	case 'r' : // base n root
 		return 5;
 	default :
-		puts("caca");
-		exit(1);
+		assert(0 && "caca");
+		//exit(1);
 	}
 }
 
@@ -251,9 +258,10 @@ double yard(char* in) {
 	char types[10];
 	char tmp_op;
 
-	for (i=0;;i++) {
+	lastc = in[0];
+	for (i=1;;i++) {
 		c = in[i];
-		printf("------- c=%c\ti=%d\n", c, i);
+		printf("------- lc=%c\ti=%d\n", lastc, i);
 		//if (c == 0) break;
 		if (is_digitf(lastc) && !is_digitf(c)) {
 			// we have a number from start to &in[i-1]
@@ -263,35 +271,55 @@ double yard(char* in) {
 			printf("len %d\ntmp:", len);
 			puts(tmp);
 			queue[queue_i] = atof(tmp);
-			printf("%f\n", queue[queue_i]);
+			printf("adding %f\n", queue[queue_i]);
 			types[queue_i] = NUM;
 			queue_i++;
 			start = &in[i];
-		}
-		if (is_op(lastc)) { // our ops are always 1 char long
-			while (stack_i > 1) {
+		} else if (is_op(lastc)) { // our ops are always 1 char long
+			while (stack_i > 0) {
 				tmp_op = stack[stack_i-1];
+				if (!is_op(tmp_op)) break;
 				if ((is_left_as(lastc) && get_prec(lastc) <= get_prec(tmp_op)) ||
-					get_prec(lastc) < get_prec(tmp_op)) {
+				    get_prec(lastc) < get_prec(tmp_op)) {
+					// pop op off stack onto queue
 					*(char*)(&queue[queue_i]) = tmp_op;
-					printf("%c\n", tmp_op);
+					printf("adding %c\n", tmp_op);
 					types[queue_i] = OP;
 					queue_i++;
 					stack_i--;
 				} else break;
 			}
+			// push op onto stack
+			printf("pushing %c\n", lastc);
 			stack[stack_i++] = lastc;
+			start = &in[i];
+		} else if (lastc == '(') {
+			printf("pushing %c\n", lastc);
+			stack[stack_i++] = lastc;
+			start = &in[i];
+		} else if (lastc == ')') {
+			while (stack[stack_i-1] != '(') {
+				// pop op from stack onto queue
+				tmp_op = stack[stack_i-1];
+				*(char*)(&queue[queue_i]) = tmp_op;
+				printf("%c\n", tmp_op);
+				types[queue_i] = OP;
+				queue_i++;
+				stack_i--;
+			}
+			stack_i--; // drop (
 			start = &in[i];
 		}
 		lastc = c;
 		if (c == '\0') break;
+		if (queue_i > 10) assert(0 && "burn");
 	}
 
-	stack_i--;
-	while (stack_i != 0) {
-		tmp_op = stack[stack_i];
+	//stack_i--;
+	while (stack_i > 0) {
+		tmp_op = stack[stack_i-1];
 		*(char*)(&queue[queue_i]) = tmp_op;
-		printf("%c\n", tmp_op);
+		printf("adding %c\n", tmp_op);
 		types[queue_i] = OP;
 		queue_i++;
 		stack_i--;
