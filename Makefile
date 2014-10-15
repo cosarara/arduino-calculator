@@ -1,11 +1,12 @@
 
 CC = gcc
 
-cli: src/eval.c src/float.c src/math_extra.c cli.c
+cli: src/eval.c src/float.c src/math_extra.c src/yard.c cli.c
 	$(CC) -Wall -g -c src/eval.c
 	$(CC) -Wall -g -c src/float.c
 	$(CC) -Wall -g -c src/math_extra.c
-	$(CC) -Wall -g -Isrc -lm eval.o float.o math_extra.o cli.c -o cli
+	$(CC) -Wall -O0 -g -c src/yard.c
+	$(CC) -Wall -g -Isrc -lm eval.o float.o math_extra.o yard.o cli.c -o cli
 
 #CC = avr-gcc
 #CXX = avr-g++

@@ -1,5 +1,5 @@
-#ifndef H_FLOAT
-     #define H_FLOAT
+#ifndef H_EVAL
+     #define H_EVAL
 
 #ifdef __cplusplus
 extern "C"{
