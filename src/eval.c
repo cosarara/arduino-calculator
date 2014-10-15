@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "float.h"
+#include "math_extra.h"
 
 //char eval_str[] = "2*22*2";
 //char eval_str[] = "1+10";
@@ -56,6 +57,33 @@ int eval_unary(char op, char* x, char* out) {
 	case 'c' :
 		result = cos(x_i);
 		break;
+	case 's' :
+		result = sin(x_i);
+		break;
+	case 't' :
+		result = tan(x_i);
+		break;
+	case 'C' :
+		result = acos(x_i);
+		break;
+	case 'S' :
+		result = asin(x_i);
+		break;
+	case 'T' :
+		result = atan(x_i);
+		break;
+	case 'l' :
+		result = log10(x_i);
+		break;
+	case 'n' :
+		result = log(x_i);
+		break;
+	case 'R' :
+		result = sqrt(x_i);
+		break;
+	case '!' :
+		result = fact(x_i);
+		break;
 	default :
 		return 1;
 	}
@@ -81,6 +109,15 @@ int eval_pair(char op, char* fst, char* snd, char* out) {
 		break;
 	case '-' :
 		result = fst_i - snd_i;
+		break;
+	case '^' :
+		result = pow(fst_i, snd_i);
+		break;
+	case 'r' : // base n root
+		result = pow(snd_i, 1/fst_i);
+		break;
+	case 'E' :
+		result = fst_i * pow(10, snd_i);
 		break;
 	default :
 		return 1;
@@ -284,12 +321,21 @@ int eval_subexpr(char* eval_str, char* out) {
 	// Separar els elements de l'expressió
 	get_elements(elements, eval_str);
 
-	//i = 0;
-	//while (elements[i] != 0) {
-	//	puts(elements[i++]);
-	//}
-
 	if (clear_uop(elements, 'c') ||
+	    clear_uop(elements, 's') ||
+	    clear_uop(elements, 't') ||
+	    clear_uop(elements, 'C') ||
+	    clear_uop(elements, 'S') ||
+	    clear_uop(elements, 'T') ||
+	    clear_uop(elements, 'l') ||
+	    clear_uop(elements, 'n') ||
+	    clear_uop(elements, 'R') ||
+	    clear_uop(elements, '!') ||
+
+	    clear_bop(elements, 'E') ||
+	    clear_bop(elements, 'r') ||
+	    clear_bop(elements, '^') ||
+
 	    clear_bop(elements, '*') ||
 	    clear_bop(elements, '/') ||
 	    clear_bop(elements, '+') ||

@@ -69,7 +69,7 @@ fmtDouble(double val, char precision, char *buf, unsigned bufLen)
     if (val < 0.0)
     {
       val = -val;
-      *buf = '-';
+      *buf++ = '-';
       bufLen--;
     }
 
