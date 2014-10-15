@@ -7,6 +7,8 @@
 #include <math.h>
 
 #include "eval.h"
+#include "yard.h"
+#include "float.h"
 
 void bmpdraw(File f, int x, int y);
 void limpiar();
@@ -234,6 +236,7 @@ void loop() {
 	int columna = 0;
 	int fila = 0;
 	static char tecla;
+	double result;
 
 	if (p.z > __PRESURE) {
 		p.x = map(p.x, TS_MINX, TS_MAXX, 0, 240);
@@ -278,12 +281,16 @@ void loop() {
 			break;
 		case '=' :
 			limpiar();
-			if (eval(eval_str, eval_str)) {
+			
+			result = yard(eval_str);
+			fmtDouble(result, 6, eval_str, 10);
+			/*if (eval(eval_str, eval_str)) {
 				strcpy(eval_str, "Error");
 				Serial.println("Eval failed");
 			} else {
 				Serial.println("Eval ok");
 			}
+			*/
 			eval_str_i = strlen(eval_str);
 			draw_eval_str();
 			break;

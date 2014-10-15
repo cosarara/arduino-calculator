@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "float.h"
-
-int r_polish(char* in);
-double yard(char* in);
+#include "yard.h"
 
 int main(int argc, const char* argv[]) {
 	char s[100];
