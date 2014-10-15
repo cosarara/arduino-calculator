@@ -146,16 +146,16 @@ void setup() {
 	TFT_BL_ON;
 
 	int r = 115;                          
-	/*
+	
 	Tft.drawCircle(119, 160, r, RED);
 	Tft.drawCircle(119, 160, r-1, RED);   
 	Tft.drawCircle(119, 160, r-3, BLUE);
 	Tft.drawCircle(119, 160, r-4, BLUE);
 	Tft.drawCircle(119, 160, r-6, GREEN);
 	Tft.drawCircle(119, 160, r-7, GREEN);
-	Tft.drawString("Arduino", 35, 145, 4, BLUE);
+	Tft.drawString("J.A.D-3000", 35, 145, 4, BLUE);
 	delay(2000);
-	*/
+	
 
 	bmpFile = SD.open("calcu.bmp");
 	bmpdraw(bmpFile, 0, 0);
