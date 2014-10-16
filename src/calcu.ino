@@ -332,8 +332,8 @@ void limpiar() {
 // more RAM but makes the drawing a little faster. 20 pixels' worth
 // is probably a good place
 
-#define BUFFPIXEL       60                      // must be a divisor of 240 
-#define BUFFPIXEL_X3    180                     // BUFFPIXELx3
+#define BUFFPIXEL       20                      // must be a divisor of 240 
+#define BUFFPIXEL_X3    BUFFPIXEL*3                     // BUFFPIXELx3
 
 void bmpdraw(File f, int x, int y)
 {

@@ -9,6 +9,10 @@
 #include "float.h"
 #include "math_extra.h"
 
+#define DBUF_SIZE 10
+#define STACK_SIZE 10
+#define TMP_SIZE 10
+
 #define NUM 1
 #define OP 2
 
@@ -172,14 +176,15 @@ double r_polish_slim(double* stack, char* types, int stack_i) {
 }
 
 int r_polish(char* in) {
+#if 0	
 	int stack_i = 0;
 	int len;
-	double stack[10]; // wtf 80 bytes
-	char types[10]; // Super hack!
+	double stack[DBUF_SIZE]; // wtf 80 bytes
+	char types[DBUF_SIZE]; // Super hack!
 	//char* start = in;
 	char* p_ = in;
 	//char lastc;
-	char tmp[10];
+	char tmp[TMP_SIZE];
 
 	//puts("size:");
 	//printf("%d\n", (int)sizeof(stack));
@@ -214,6 +219,8 @@ int r_polish(char* in) {
 	fmtDouble(stack[0], 6, tmp, 10);
 	puts(tmp);
 	return stack[0];
+#endif
+	return 0;
 }
 
 int get_prec(char op) {
@@ -249,13 +256,13 @@ double yard(char* in) {
 	int len;
 	char lastc = 0;
 	char c = 0;
-	char tmp[10];
+	char tmp[TMP_SIZE];
 	char* start = in;
 	int stack_i = 0;
-	char stack[10];
+	char stack[STACK_SIZE];
 	int queue_i = 0;
-	double queue[10];
-	char types[10];
+	double queue[DBUF_SIZE];
+	char types[DBUF_SIZE];
 	char tmp_op;
 
 	lastc = in[0];
@@ -312,7 +319,7 @@ double yard(char* in) {
 		}
 		lastc = c;
 		if (c == '\0') break;
-		if (queue_i > 10) assert(0 && "burn");
+		if (queue_i > DBUF_SIZE) assert(0 && "burn");
 	}
 
 	//stack_i--;
