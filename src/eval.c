@@ -26,6 +26,18 @@ int is_digitf(char c) {
 	return (c == '.' || (c >= '0' && c <= '9'));
 }
 
+void cut_trailing_zeroes(char* s) {
+	char* c = s + strlen(s) - 1;
+	while (c != s && *c == '0') {
+		*c = '\0';
+		c--;
+	}
+	if (*c == '.') {
+		*c = '\0';
+	}
+}
+
+#if 0
 int count_elements(char* elements[]) {
 	int i;
 	for (i=0; elements[i]!=0; i++);
@@ -39,16 +51,6 @@ void free_elements(char* elements[]) {
 	}
 }
 
-void cut_trailing_zeroes(char* s) {
-	char* c = s + strlen(s) - 1;
-	while (c != s && *c == '0') {
-		*c = '\0';
-		c--;
-	}
-	if (*c == '.') {
-		*c = '\0';
-	}
-}
 
 int eval_unary(char op, char* x, char* out) {
 	double result;
@@ -392,9 +394,11 @@ int clear_parens(char* expr, char* out) {
 	strcpy(out, sub_expr);
 	return 0;
 }
+#endif
 
 int eval(char* expr, char* out) {
-	return clear_parens(expr, out);
+	return 0;
+	//return clear_parens(expr, out);
 }
 
 

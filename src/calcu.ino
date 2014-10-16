@@ -155,13 +155,16 @@ void setup() {
 	Tft.drawCircle(119, 160, r-4, BLUE);
 	Tft.drawCircle(119, 160, r-6, GREEN);
 	Tft.drawCircle(119, 160, r-7, GREEN);
-	Tft.drawString("J.A.D-3000", 35, 145, 4, BLUE);
-	delay(2000);
+	Tft.drawString("J.A.D", 50, 135, 4, BLUE);
+	Tft.drawString("3000", 65, 170, 4, BLUE);
+	delay(1000);
 	
 
+	Serial.println("gonna draw init");
 	bmpFile = SD.open("calcu.bmp");
 	bmpdraw(bmpFile, 0, 0);
 	bmpFile.close();
+	Serial.println("drawn init");
 	//Tft.drawString("0", 22, 18, 3, BLUE);
 }
 
@@ -267,15 +270,19 @@ void loop() {
 			break;
 		case 'o' :
 			if (teclas == &teclas_bas) {
+				Serial.println("gonna draw 2");
 				teclas = &teclas_adv;
 				bmpFile = SD.open("calcu2.bmp");
 				bmpdraw(bmpFile, 0, 0);
 				bmpFile.close();
+				Serial.println("drawn 2");
 			} else {
+				Serial.println("gonna draw 1");
 				teclas = &teclas_bas;
 				bmpFile = SD.open("calcu.bmp");
 				bmpdraw(bmpFile, 0, 0);
 				bmpFile.close();
+				Serial.println("drawn 1");
 			}
 			draw_eval_str();
 			break;
@@ -284,6 +291,7 @@ void loop() {
 			
 			result = yard(eval_str);
 			fmtDouble(result, 6, eval_str, 10);
+			cut_trailing_zeroes(eval_str);
 			/*if (eval(eval_str, eval_str)) {
 				strcpy(eval_str, "Error");
 				Serial.println("Eval failed");

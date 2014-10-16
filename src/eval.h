@@ -7,6 +7,8 @@ extern "C"{
 
 int eval(char* expr, char* out);
 
+void cut_trailing_zeroes(char* s);
+
 #ifdef __cplusplus
 }
 #endif
