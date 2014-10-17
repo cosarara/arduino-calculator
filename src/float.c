@@ -55,6 +55,7 @@ fmtUnsigned(unsigned long val, char *buf, unsigned bufLen, char width)
 void
 fmtDouble(double val, char precision, char *buf, unsigned bufLen)
 {
+  //val += 0.00005; // hack
   if (!buf || !bufLen)
     return;
 

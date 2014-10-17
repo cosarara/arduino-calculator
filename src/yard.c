@@ -24,15 +24,15 @@ int is_op(char c) {
 	//return (!is_digitf(c) && c != '(' && c != ')');
 	if (c == '\0') return 0;
 	if (strchr("*/+-^rE", c)) return BINARY;
-	if (strchr("cstCSTlnR!", c)) return UNARY;
+	if (strchr("#cstCSTlnR!", c)) return UNARY;
 	return 0;
 }
 
 double eval_unary_d(char op, double x_i) {
 	double result;
-	printf("opping %c %f\n", op, x_i);
+	//printf("opping %c %f\n", op, x_i);
 	switch (op) {
-	case '-' :
+	case '-' : case '#' :
 		result = -x_i;
 		break;
 	case 'c' :
@@ -66,16 +66,16 @@ double eval_unary_d(char op, double x_i) {
 		result = fact(x_i);
 		break;
 	default :
-		puts("caca unary");
+		//puts("caca unary");
 		exit(1);
 	}
-	printf("\t= %f\n", result);
+	//printf("\t= %f\n", result);
 	return result;
 }
 
 double eval_pair_d(char op, double fst_i, double snd_i) {
 	double result;
-	printf("opping %f %c %f\n", fst_i, op, snd_i);
+	//printf("opping %f %c %f\n", fst_i, op, snd_i);
 	switch (op) {
 	case '*' :
 		result = fst_i * snd_i;
@@ -99,24 +99,24 @@ double eval_pair_d(char op, double fst_i, double snd_i) {
 		result = fst_i * pow(10, snd_i);
 		break;
 	default :
-		puts("caca binary");
+		//puts("caca binary");
 		exit(1);
 	}
-	printf("\t= %f\n", result);
+	//printf("\t= %f\n", result);
 	return result;
 }
 
 void r_polish_slim_dbg(double* stack, char* types, int stack_i) {
 	int i;
-	printf("debug: ");
+	//printf("debug: ");
 	for (i = 0; i < stack_i; i++) {
 		if (types[i] == NUM) {
-			printf("%f ", stack[i]);
+			//printf("%f ", stack[i]);
 		} else {
-			printf("%c ", *(char*)(&stack[i]));
+			//printf("%c ", *(char*)(&stack[i]));
 		}
 	}
-	printf("\n");
+	//printf("\n");
 }
 
 double r_polish_slim(double* stack, char* types, int stack_i) {
@@ -131,18 +131,18 @@ double r_polish_slim(double* stack, char* types, int stack_i) {
 	// stack_i is stack length from now on
 	//stack_i += 1;
 	while (stack_i > 1) { // TODO: time out
-		puts("----------------------------");
-		printf("stack size: %d\n", stack_i);
-		printf("i: %d\n", i);
+		//puts("----------------------------");
+		//printf("stack size: %d\n", stack_i);
+		//printf("i: %d\n", i);
 		r_polish_slim_dbg(stack, types, stack_i);
 		if (types[i] == NUM) {
-			printf("\t%f\n", stack[i]);
+			//printf("\t%f\n", stack[i]);
 			//fmtDouble(stack[i], 6, tmp, 10);
 			//puts(tmp);
 			i++;
 		} else {
 			op = *(char*)(&stack[i]);
-			printf("\t%c\n", op);
+			//printf("\t%c\n", op);
 			if (is_op(op) == UNARY || (op == '-' && i == 1)) {
 				a = stack[i-1];
 				result = eval_unary_d(op, a);
@@ -235,6 +235,8 @@ int get_prec(char op) {
 		return 2;
 	case '-' :
 		return 2;
+	case '#' : // unary -
+		return 2;
 	case '^' :
 		return 4;
 	case 'E' :
@@ -252,7 +254,7 @@ int is_left_as(char op) {
 }
 
 double yard(char* in) {
-	int i;
+	char i;
 	int len;
 	char lastc = 0;
 	char c = 0;
@@ -266,23 +268,32 @@ double yard(char* in) {
 	char tmp_op;
 
 	lastc = in[0];
+	if (lastc == 0) return 0.0;
 	for (i=1;;i++) {
+			dbg("ll");
+			delay(200);
 		c = in[i];
-		printf("------- lc=%c\ti=%d\n", lastc, i);
+			dbg("lall");
+			delay(200);
+		//printf("------- lc=%c\ti=%d\n", lastc, i);
 		//if (c == 0) break;
 		if (is_digitf(lastc) && !is_digitf(c)) {
+			dbg("1");
+			delay(200);
 			// we have a number from start to &in[i-1]
 			len = &in[i]-start;
 			memcpy(tmp, start, len);
 			tmp[len] = '\0';
-			printf("len %d\ntmp:", len);
-			puts(tmp);
+			//printf("len %d\ntmp:", len);
+			//puts(tmp);
 			queue[queue_i] = atof(tmp);
-			printf("adding %f\n", queue[queue_i]);
+			//printf("adding %f\n", queue[queue_i]);
 			types[queue_i] = NUM;
 			queue_i++;
 			start = &in[i];
 		} else if (is_op(lastc)) { // our ops are always 1 char long
+			dbg("2");
+			delay(200);
 			while (stack_i > 0) {
 				tmp_op = stack[stack_i-1];
 				if (!is_op(tmp_op)) break;
@@ -290,18 +301,21 @@ double yard(char* in) {
 				    get_prec(lastc) < get_prec(tmp_op)) {
 					// pop op off stack onto queue
 					*(char*)(&queue[queue_i]) = tmp_op;
-					printf("adding %c\n", tmp_op);
+					//printf("adding %c\n", tmp_op);
 					types[queue_i] = OP;
 					queue_i++;
 					stack_i--;
 				} else break;
 			}
 			// push op onto stack
-			printf("pushing %c\n", lastc);
+			if (lastc == '-' && ((i>=2 && in[i-2] == '(') || queue_i == 0)) {
+				lastc = '#';
+			}
+			//printf("pushing %c\n", lastc);
 			stack[stack_i++] = lastc;
 			start = &in[i];
 		} else if (lastc == '(') {
-			printf("pushing %c\n", lastc);
+			//printf("pushing %c\n", lastc);
 			stack[stack_i++] = lastc;
 			start = &in[i];
 		} else if (lastc == ')') {
@@ -309,7 +323,7 @@ double yard(char* in) {
 				// pop op from stack onto queue
 				tmp_op = stack[stack_i-1];
 				*(char*)(&queue[queue_i]) = tmp_op;
-				printf("%c\n", tmp_op);
+				//printf("%c\n", tmp_op);
 				types[queue_i] = OP;
 				queue_i++;
 				stack_i--;
@@ -317,21 +331,24 @@ double yard(char* in) {
 			stack_i--; // drop (
 			start = &in[i];
 		}
+			dbg("5");
+			delay(200);
 		lastc = c;
 		if (c == '\0') break;
-		if (queue_i > DBUF_SIZE) assert(0 && "burn");
+		if (queue_i > DBUF_SIZE) dbg("!"); //assert(0 && "burn");
+		delay(200);
 	}
 
 	//stack_i--;
 	while (stack_i > 0) {
 		tmp_op = stack[stack_i-1];
 		*(char*)(&queue[queue_i]) = tmp_op;
-		printf("adding %c\n", tmp_op);
+		//printf("adding %c\n", tmp_op);
 		types[queue_i] = OP;
 		queue_i++;
 		stack_i--;
 	}
-	puts("yay!");
+	//puts("yay!");
 	return r_polish_slim(queue, types, queue_i);
 }
 

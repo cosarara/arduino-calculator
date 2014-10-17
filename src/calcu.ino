@@ -120,8 +120,8 @@ char teclas_adv[5][5] = {
 
 char (*teclas)[5][5] = &teclas_bas;
 
-char eval_str[100];
-int eval_str_i;
+char eval_str[10];
+char eval_str_i;
 
 File bmpFile;
 File bmpFile_adv;
@@ -289,8 +289,10 @@ void loop() {
 		case '=' :
 			limpiar();
 			
+			Serial.println("going to eval");
+		delay(200);
 			result = yard(eval_str);
-			fmtDouble(result, 6, eval_str, 10);
+			fmtDouble(result, 4, eval_str, 10);
 			cut_trailing_zeroes(eval_str);
 			/*if (eval(eval_str, eval_str)) {
 				strcpy(eval_str, "Error");
@@ -332,7 +334,7 @@ void limpiar() {
 // more RAM but makes the drawing a little faster. 20 pixels' worth
 // is probably a good place
 
-#define BUFFPIXEL       20                      // must be a divisor of 240 
+#define BUFFPIXEL       10                      // must be a divisor of 240
 #define BUFFPIXEL_X3    BUFFPIXEL*3                     // BUFFPIXELx3
 
 void bmpdraw(File f, int x, int y)
