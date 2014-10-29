@@ -9,9 +9,9 @@
 #include "float.h"
 #include "math_extra.h"
 
-#define DBUF_SIZE 10
-#define STACK_SIZE 10
-#define TMP_SIZE 10
+#define DBUF_SIZE 15
+#define STACK_SIZE 15
+#define TMP_SIZE 15
 
 #define NUM 1
 #define OP 2
@@ -127,14 +127,14 @@ double r_polish_slim(double* stack, char* types, int stack_i) {
 	//char lastc;
 	double a, b, result;
 
-	r_polish_slim_dbg(stack, types, stack_i);
+	//r_polish_slim_dbg(stack, types, stack_i);
 	// stack_i is stack length from now on
 	//stack_i += 1;
 	while (stack_i > 1) { // TODO: time out
 		//puts("----------------------------");
 		//printf("stack size: %d\n", stack_i);
 		//printf("i: %d\n", i);
-		r_polish_slim_dbg(stack, types, stack_i);
+		//r_polish_slim_dbg(stack, types, stack_i);
 		if (types[i] == NUM) {
 			//printf("\t%f\n", stack[i]);
 			//fmtDouble(stack[i], 6, tmp, 10);
@@ -254,7 +254,7 @@ int is_left_as(char op) {
 }
 
 double yard(char* in) {
-	char i;
+	int i;
 	int len;
 	char lastc = 0;
 	char c = 0;
@@ -268,18 +268,14 @@ double yard(char* in) {
 	char tmp_op;
 
 	lastc = in[0];
+	//dbg(in);
+
 	if (lastc == 0) return 0.0;
 	for (i=1;;i++) {
-			dbg("ll");
-			delay(200);
 		c = in[i];
-			dbg("lall");
-			delay(200);
 		//printf("------- lc=%c\ti=%d\n", lastc, i);
 		//if (c == 0) break;
 		if (is_digitf(lastc) && !is_digitf(c)) {
-			dbg("1");
-			delay(200);
 			// we have a number from start to &in[i-1]
 			len = &in[i]-start;
 			memcpy(tmp, start, len);
@@ -292,8 +288,6 @@ double yard(char* in) {
 			queue_i++;
 			start = &in[i];
 		} else if (is_op(lastc)) { // our ops are always 1 char long
-			dbg("2");
-			delay(200);
 			while (stack_i > 0) {
 				tmp_op = stack[stack_i-1];
 				if (!is_op(tmp_op)) break;
@@ -331,12 +325,9 @@ double yard(char* in) {
 			stack_i--; // drop (
 			start = &in[i];
 		}
-			dbg("5");
-			delay(200);
 		lastc = c;
 		if (c == '\0') break;
-		if (queue_i > DBUF_SIZE) dbg("!"); //assert(0 && "burn");
-		delay(200);
+		//if (queue_i > DBUF_SIZE) //dbg("!"); //assert(0 && "burn");
 	}
 
 	//stack_i--;

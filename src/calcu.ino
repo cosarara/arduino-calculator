@@ -139,11 +139,11 @@ void setup() {
 	card.init(SPI_FULL_SPEED, PIN_SD_CS); 
 
 	if (!SD.begin(PIN_SD_CS)) { 
-		Serial.println("failed!");
+		//Serial.println("failed!");
 		while(1);                               // init fail, die here
 	}
 
-	Serial.println("SD OK!");
+	//Serial.println("SD OK!");
 
 	TFT_BL_ON;
 
@@ -160,11 +160,11 @@ void setup() {
 	delay(1000);
 	
 
-	Serial.println("gonna draw init");
+	//Serial.println("gonna draw init");
 	bmpFile = SD.open("calcu.bmp");
 	bmpdraw(bmpFile, 0, 0);
 	bmpFile.close();
-	Serial.println("drawn init");
+	//Serial.println("drawn init");
 	//Tft.drawString("0", 22, 18, 3, BLUE);
 }
 
@@ -214,18 +214,16 @@ void dbg(char* a) {
 	//Tft.drawString(a, 5, 10*dbglinei, 1, BLUE);
 	Serial.write(a);
 	Serial.print("\r\n");
-	dbglinei++;
-	delay(500);
+	//dbglinei++;
+	//delay(500);
 }
 }
 
 void draw_eval_str() { // DOS line endings coz ino serial
-	Serial.print("Eval str: ");
-	Serial.print(eval_str);
-	Serial.print("\r\n");
-	//Serial.print("Eval str ptr: ");
-	//Serial.print((int)eval_str);
-	Serial.print("\r\n");
+	//Serial.print("Eval str: ");
+	//Serial.print(eval_str);
+	//Serial.print("\r\n");
+	//Serial.print("\r\n");
 	Tft.drawString(eval_str, 22, 18, 3, BLUE);
 }
 
@@ -248,57 +246,56 @@ void loop() {
 		columna = get_col_in_grid(p.x);
 
 		tecla = (*teclas)[fila-1][columna-1];
-		Serial.write("pressed: ");
-		Serial.print(tecla);
-		Serial.write("\r\n");
+		//Serial.write("pressed: ");
+		//Serial.print(tecla);
+		//Serial.write("\r\n");
 
 		switch (tecla) {
 		case 'A' :
 			eval_str[0] = 0;
 			eval_str_i = 0;
 			limpiar();
-			Serial.println("clear");
+			//Serial.println("clear");
 			break;
 		case '@' :
 			if (eval_str_i == 0)
 				break;
 			eval_str_i--;
 			eval_str[eval_str_i] = 0;
-			Serial.println("backspace");
+			//Serial.println("backspace");
 			limpiar();
 			draw_eval_str();
 			break;
 		case 'o' :
 			if (teclas == &teclas_bas) {
-				Serial.println("gonna draw 2");
+				//Serial.println("gonna draw 2");
 				teclas = &teclas_adv;
 				bmpFile = SD.open("calcu2.bmp");
 				bmpdraw(bmpFile, 0, 0);
 				bmpFile.close();
-				Serial.println("drawn 2");
+				//Serial.println("drawn 2");
 			} else {
-				Serial.println("gonna draw 1");
+				//Serial.println("gonna draw 1");
 				teclas = &teclas_bas;
 				bmpFile = SD.open("calcu.bmp");
 				bmpdraw(bmpFile, 0, 0);
 				bmpFile.close();
-				Serial.println("drawn 1");
+				//Serial.println("drawn 1");
 			}
 			draw_eval_str();
 			break;
 		case '=' :
 			limpiar();
 			
-			Serial.println("going to eval");
-		delay(200);
+			//Serial.println("going to eval");
 			result = yard(eval_str);
 			fmtDouble(result, 4, eval_str, 10);
 			cut_trailing_zeroes(eval_str);
 			/*if (eval(eval_str, eval_str)) {
 				strcpy(eval_str, "Error");
-				Serial.println("Eval failed");
+				//Serial.println("Eval failed");
 			} else {
-				Serial.println("Eval ok");
+				//Serial.println("Eval ok");
 			}
 			*/
 			eval_str_i = strlen(eval_str);
@@ -383,8 +380,8 @@ void bmpdraw(File f, int x, int y)
 
 	}
 
-	Serial.print(millis() - time, DEC);
-	Serial.println(" ms");
+	//Serial.print(millis() - time, DEC);
+	//Serial.println(" ms");
 }
 
 boolean bmpReadHeader(File f) 
@@ -400,20 +397,20 @@ boolean bmpReadHeader(File f)
 
 	// read file size
 	tmp = read32(f);
-	Serial.print("size 0x");
-	Serial.println(tmp, HEX);
+	//Serial.print("size 0x");
+	//Serial.println(tmp, HEX);
 
 	// read and ignore creator bytes
 	read32(f);
 
 	__Gnbmp_image_offset = read32(f);
-	Serial.print("offset ");
-	Serial.println(__Gnbmp_image_offset, DEC);
+	//Serial.print("offset ");
+	//Serial.println(__Gnbmp_image_offset, DEC);
 
 	// read DIB header
 	tmp = read32(f);
-	Serial.print("header size ");
-	Serial.println(tmp, DEC);
+	//Serial.print("header size ");
+	//Serial.println(tmp, DEC);
 
 
 	int bmp_width = read32(f);
@@ -428,16 +425,16 @@ boolean bmpReadHeader(File f)
 		return false;
 
 	bmpDepth = read16(f);
-	Serial.print("bitdepth ");
-	Serial.println(bmpDepth, DEC);
+	//Serial.print("bitdepth ");
+	//Serial.println(bmpDepth, DEC);
 
 	if (read32(f) != 0) {
 		// compression not supported!
 		return false;
 	}
 
-	Serial.print("compression ");
-	Serial.println(tmp, DEC);
+	//Serial.print("compression ");
+	//Serial.println(tmp, DEC);
 
 	return true;
 }
